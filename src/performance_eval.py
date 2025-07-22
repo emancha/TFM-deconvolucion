@@ -8,6 +8,8 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import classification_report
 import os
 
+RUTA_REPO = 'C:/Users/emanc/OneDrive/Documentos/MUBinf/Asignaturas/09. TFM/TFM_repo/'
+
 
 final_adata= sc.read_h5ad(r"C:\Users\emanc\OneDrive - Universidad de Extremadura (1)\MUBinf\09.TFM\Datos\lung_cancer_filtrado.h5ad", backed="r")
 
@@ -20,7 +22,7 @@ X_train, X_test, y_train, y_test = train_test_split(
     y, 
     test_size=0.2,       # 20% para test
     random_state=42,     # Para reproducibilidad
-    stratify=y           # ¡CRÍTICO! Mantiene la proporción de tipos celulares
+    stratify=y           # Mantiene la proporción de tipos celulares
 )
 
 #Carga del modelo
@@ -56,7 +58,7 @@ plt.xlabel('Etiqueta Predicha (Predicted Label)')
 plt.title(f'Matriz de Confusión_{nombre}')
 print("Matriz de confuión generada")
 
-plt.savefig(f'C:/Users/emanc/OneDrive/Documentos/MUBinf/Asignaturas/09. TFM/TFM_repo/data/processed/confusion_matrix_{nombre}.pdf')
+plt.savefig(f'{RUTA_REPO}data/processed/confusion_matrix_{nombre}.pdf')
 plt.show()
 print("Matriz de confusión guardada ")
 
@@ -66,3 +68,8 @@ print("Matriz de confusión guardada ")
 report = classification_report(y_test, y_pred)
 print("Reporte de Clasificación:\n")
 print(report)
+
+ruta_reporte = "data/processed/reporte_clasificacion.txt"
+with open(f'{RUTA_REPO}{ruta_reporte}{nombre}', "w") as f:
+    f.write(report)
+    print()
