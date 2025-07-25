@@ -67,4 +67,9 @@ print("Versión cruda de los datos:")
 print(adata.raw is not None)
 '''
 
-print(adata.uns)
+groupby_column = 'cell_type'
+sc.tl.rank_genes_groups(adata, groupby=groupby_column, method='t-test')
+sc.pl.rank_genes_groups_dotplot(adata, n_genes=4, show=True)
+sc.pl.rank_genes_groups_violin(adata, n_genes=4, show=True)
+marker_genes_df = pd.DataFrame(adata.uns['rank_genes_groups']['names'])
+print(marker_genes_df.head(5))
