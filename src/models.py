@@ -46,16 +46,22 @@ def train_and_evaluate_model(
     
     # --- Selección y Entrenamiento del Modelo ---
     model, le = None, None # le para el LabelEncoder de XGBoost
+    y_train_processed = y_train
     
+    if model_type in ['xgb', 'mlp']:
+        print(f"Codificando etiquetas para {model_type.upper()}...")
+        le = LabelEncoder()
+        y_train_processed = le.fit_transform(y_train)
+   
     if model_type == 'rf':
         print(f"--- Entrenando RandomForestClassifier: {model_name} ---")
         model = RandomForestClassifier(random_state=RANDOM_STATE, n_jobs=-1, **kwargs)
-        model.fit(X_train, y_train)
+        model.fit(X_train, y_train_processed)
         
     elif model_type == 'xgb':
         print(f"--- Entrenando XGBClassifier: {model_name} ---")
-        le = LabelEncoder()
-        y_train_encoded = le.fit_transform(y_train)
+        #le = LabelEncoder()
+        #y_train_encoded = le.fit_transform(y_train)
         
         model = XGBClassifier(
             random_state=RANDOM_STATE, 
@@ -64,7 +70,7 @@ def train_and_evaluate_model(
             eval_metric='mlogloss', 
             **kwargs
         )
-        model.fit(X_train, y_train_encoded)
+        model.fit(X_train, y_train_processed)
 
     elif model_type == 'mlp':
         print(f"--- Entrenando MLPClassifier: {model_name} ---")
@@ -81,7 +87,7 @@ def train_and_evaluate_model(
         default_params.update(kwargs)
         
         model = MLPClassifier(random_state=RANDOM_STATE, **default_params)
-        model.fit(X_train, y_train)
+        model.fit(X_train, y_train_processed)
         
     else:
         raise ValueError("Tipo de modelo no soportado. Elige entre 'rf', 'xgb', 'mlp'.")
@@ -89,7 +95,17 @@ def train_and_evaluate_model(
     # --- Evaluación del Modelo ---
     print("Evaluando el modelo...")
     
-    y_pred = None
+    if model_type in ['xgb', 'mlp']:
+        if model_type == 'mlp' and hasattr(X_test, 'toarray'):
+            X_test = X_test.toarray()
+        y_pred_encoded = model.predict(X_test)
+        y_pred = le.inverse_transform(y_pred_encoded) 
+    else: 
+        y_pred = model.predict(X_test)
+    
+    class_labels = le.classes_ if model_type in ['xgb', 'mlp'] else model.classes_
+    
+    '''y_pred = None
     if model_type == 'xgb':
         y_pred_encoded = model.predict(X_test)
         y_pred = le.inverse_transform(y_pred_encoded)
@@ -99,10 +115,15 @@ def train_and_evaluate_model(
         y_pred = model.predict(X_test)
     else: # rf
         y_pred = model.predict(X_test)
-        
+
+    if model_type == 'xgb':
+        class_labels = le.classes_
+    else:
+        class_labels = model.classes_
+    '''
     accuracy = accuracy_score(y_test, y_pred)
-    report = classification_report(y_test, y_pred)
-    cm = confusion_matrix(y_test, y_pred, labels=model.classes_ if model_type != 'xgb' else le.classes_)
+    report = classification_report(y_test, y_pred, labels=class_labels, zero_division=0)
+    cm = confusion_matrix(y_test, y_pred, labels=class_labels)
     
     print(f"Precisión (Accuracy): {accuracy * 100:.2f}%")
 
@@ -117,4 +138,4 @@ def train_and_evaluate_model(
         joblib.dump(model, model_path)
     print(f"Modelo guardado en: {model_path}")
     
-    return model, report, cm
+    return model, report, cm, class_labels
