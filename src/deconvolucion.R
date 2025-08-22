@@ -1,8 +1,3 @@
-# --- APARTADO 1: INSTALACIÓN Y CARGA DE LIBRERÍAS ---
-# Instalamos y cargamos todas las librerías necesarias.
-# `remotes` se usa para instalar paquetes desde GitHub.
-# `immunedeconv` es nuestra herramienta principal.
-# `dplyr` y `tibble` son para la manipulación de datos.
 
 if (!require("remotes", quietly = TRUE)) install.packages("remotes")
 if (!require("immunedeconv", quietly = TRUE)) remotes::install_github("grst/immunedeconv")
@@ -22,17 +17,14 @@ print("--- Cargando y formateando los datos de entrada ---")
 
 # Rutas a los ficheros
 bulk_path <- "data/processed/TCGA-LUAD_bulk_for_R.tsv"
-signature_path <- "data/processed/optimized_signature_for_R.tsv"
+signature_path <- "data/processed/signature_matrix_global_RF.tsv"
 
 # Cargar los datos
 bulk_df <- read.delim(bulk_path, sep = "\t", stringsAsFactors = FALSE)
 signature_df <- read.delim(signature_path, sep = "\t", stringsAsFactors = FALSE)
 
 # --- Formateo de la Matriz de Bulk ---
-# immunedeconv espera:
-# - Genes como filas (con nombres de gen como nombres de fila).
-# - Muestras como columnas.
-#
+
 # Primero, convertimos la primera columna ('sample_id') en los nombres de las filas
 bulk_df <- bulk_df %>% tibble::column_to_rownames("sample_id")
 
@@ -55,13 +47,13 @@ print(paste("Matriz de firmas formateada con", nrow(signature_matrix), "genes y"
 
 print("--- Iniciando la deconvolución con el método EPIC ---")
 
-# 1. Definir los argumentos para la función
+# Definir los argumentos para la función
 # `gene_expression_matrix` es nuestra matriz de bulk
 # `signature_matrix` es nuestra matriz de firmas
 # `signature_genes` es simplemente la lista de todos los genes en nuestra firma
 signature_gene_list <- rownames(signature_matrix)
 
-# 2. Llamar a la función epic_custom
+# Llamar a la función epic_custom
 deconv_results <- deconvolute_epic_custom(
   gene_expression_matrix = bulk_matrix,
   signature_matrix = signature_matrix,
@@ -83,7 +75,7 @@ print("--- Deconvolución completada ---")
 print("--- Guardando los resultados ---")
 
 # Ruta de salida
-results_path <- "data/processed/deconv_results_epic.csv"
+results_path <- "data/processed/deconv_results_epic_global.csv"
 
 # Usamos `write.csv` para guardar los resultados
 write.csv(deconv_results_wide, file = results_path, row.names = FALSE)

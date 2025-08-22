@@ -38,7 +38,7 @@ gene_symbols <- mapIds(org.Hs.eg.db,
                        keys = ensembl_ids,
                        column = "SYMBOL",
                        keytype = "ENSEMBL",
-                       multiVals = "first") # Si un ID mapea a varios símbolos, nos quedamos con el primero
+                       multiVals = "first") 
 
 # Creamos un dataframe con el mapeo y eliminamos los IDs sin símbolo
 mapping_df <- data.frame(ENSEMBL = ensembl_ids, SYMBOL = gene_symbols, stringsAsFactors = FALSE)
@@ -57,36 +57,9 @@ bulk_counts_matrix_final <- bulk_counts_matrix_mapped[
 print("Traducción de IDs completada.")
 
 
-
-print("\n--- Iniciando normalización a TPM ---")
-# 2. NORMALIZACIÓN A TPM
-# Para TPM, necesitamos la longitud de los genes. Usaremos biomaRt.
-ensembl <- useEnsembl(biomart = "genes", dataset = "hsapiens_gene_ensembl")
-gene_lengths <- getBM(attributes = c('hgnc_symbol', 'transcript_length'),
-                      filters = 'hgnc_symbol',
-                      values = rownames(bulk_counts_matrix_final),
-                      mart = ensembl)
-
-# Calculamos la longitud promedio por gen
-gene_lengths <- aggregate(transcript_length ~ hgnc_symbol, data = gene_lengths, FUN = mean)
-rownames(gene_lengths) <- gene_lengths$hgnc_symbol
-
-# Alineamos la matriz de conteos con las longitudes
-common_genes <- intersect(rownames(bulk_counts_matrix_final), rownames(gene_lengths))
-counts_for_tpm <- bulk_counts_matrix_final[common_genes, ]
-lengths_for_tpm <- gene_lengths[common_genes, "transcript_length"]
-
-# Cálculo de TPM
-rpk <- counts_for_tpm / (lengths_for_tpm / 1000)
-per_million_scalers <- colSums(rpk) / 1e6
-bulk_tpm_matrix <- rpk / matrix(per_million_scalers, nrow = nrow(rpk), ncol = ncol(rpk), byrow = TRUE)
-
-print("Normalización a TPM completada.")
-
-
 print("--- Iniciando la deconvolución con quanTIseq estándar ---")
 deconv_results <- deconvolute(
-  gene_expression = bulk_tpm_matrix, # ¡Usamos la matriz TPM!
+  gene_expression = bulk_counts_matrix_final,
   method = "quantiseq",
   tumor = TRUE,
   arrays = FALSE,
@@ -103,7 +76,7 @@ deconv_results_wide <- deconv_results %>%
 print("--- Guardando los resultados ---")
 
 # Ruta de salida
-results_path <- "data/processed/deconv_results_quantisec_2.csv"
+results_path <- "data/processed/deconv_results_quantisec_new.csv"
 
 # Usamos `write.csv` para guardar los resultados
 write.csv(deconv_results, file = results_path, row.names = FALSE)
