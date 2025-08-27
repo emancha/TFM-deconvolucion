@@ -4,7 +4,7 @@ outputs/
 env/
 venv/
 __pycache__/
-
+environment_full.yml
 .ipynb_checkpoints/
 .old
 
