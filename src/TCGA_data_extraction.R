@@ -13,10 +13,10 @@ library(TCGAbiolinks)
 library(SummarizedExperiment) # Para manejar el objeto de datos
 
 # 2. Definir el proyecto y la ruta de salida
-# Puedes cambiar "TCGA-LUAD" por "TCGA-LUSC" para el carcinoma de células escamosas
+
 
 project_name <- "TCGA-LUAD"
-output_dir <- "TCGA_data" # Creará una carpeta en tu directorio de trabajo actual
+output_dir <- "TCGA_data" 
 
 # 3. Construir la consulta para los datos de expresión génica
 # Queremos la matriz de conteos generada por el pipeline HTSeq
@@ -27,12 +27,12 @@ query_expression <- GDCquery(
   workflow.type = "STAR - Counts"
 )
 
-# 4. Descargar los datos (esto puede tardar bastante y crear una carpeta grande)
+# 4. Descargar los datos
 GDCdownload(
   query = query_expression,
   method = "api",
   directory = output_dir,
-  files.per.chunk = 10 # Para evitar timeouts
+  files.per.chunk = 10 
 )
 
 # 5. Preparar los datos en un objeto R
@@ -64,9 +64,7 @@ print(list_cols)
 # Creamos un nuevo data.frame solo con las columnas que NO son listas
 clinical_df_clean <- clinical_df[, !is_list_col]
 
-# (Opcional, pero recomendado) Selección de columnas clínicas clave
-# A menudo, solo necesitamos un subconjunto de las ~100 columnas clínicas.
-# Esto hace que el fichero final sea mucho más manejable.
+
 key_clinical_vars <- c(
   # Identificadores
   "barcode", "patient", "definition",
@@ -92,7 +90,6 @@ print(head(clinical_df_final))
 
 
 # 9. Guardar los datos limpios en formato CSV
-# (Asegúrate de estar en una ruta de trabajo corta como C:\TFM_work)
 write.csv(t(counts_matrix), file = "TCGA-LUAD_star_counts.csv")
 write.csv(clinical_df_final, file = "TCGA-LUAD_clinical_data_clean.csv", row.names = FALSE)
 
