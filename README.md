@@ -68,7 +68,7 @@ conda activate entorno_TFM
 Los datasets principales no están incluidos en este repositorio debido a su tamaño.
 
 -   **Dataset de scRNA-seq:** Descargar el fichero `.h5ad` de la colección de CZI CELLxGENE: [Enlace a la colección](https://cellxgene.cziscience.com/collections/3f7c572c-cd73-4b51-a313-207c7f20f188) y colocarlo en la carpeta `data/raw/`.
--   **Dataset de TCGA:** Los datos de TCGA se descargan automáticamente mediante el script `deconvolution.R` (ver paso 5).
+-   **Dataset de TCGA:** Los datos de TCGA se descargan automáticamente mediante el script `TCGA_data_extraction.R` (ver paso 5).
 
 ### 5. Ejecutar el Pipeline
 
@@ -76,7 +76,7 @@ El análisis completo se puede reproducir ejecutando los notebooks en su orden n
 
 1.  **Ejecutar los notebooks de Python:** Abre Jupyter Lab/Notebook en el entorno `entorno_TFM` y ejecuta los notebooks de la carpeta `/notebooks/` en orden, desde el 1 al 4.
     -   *Nota:* El Notebook 4 tiene un punto de parada donde se debe ejecutar el script de R.
-2.  **Ejecutar el script de R:** En el punto indicado del Notebook 4, abre `deconvolution.R` con RStudio y ejecútalo. Esto generará los ficheros de resultados de la deconvolución en `data/processed/`.
+2.  **Ejecutar el script de R:** En el punto indicado del Notebook 4, abre `deconvolucion.R` y `deconvolucion_quantiseq.R` con RStudio y ejecútalos. Esto generará los ficheros de resultados de la deconvolución en `data/processed/`.
 3.  **Continuar con el notebook de Python:** Una vez finalizado el script de R, puedes continuar con la ejecución del resto de celdas del Notebook 4 para generar los análisis clínicos finales.
 
 ---
